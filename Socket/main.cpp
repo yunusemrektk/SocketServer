@@ -8,6 +8,8 @@
 #pragma comment(lib,"ws2_32.lib")
 
 using namespace std;
+void sendProduct();
+void uploadProduct();
 
 void main()
 {
@@ -82,29 +84,34 @@ void main()
 	int sendResult;
 
 	
-	sendResult = send(clientSocket, message.c_str(), (int)strlen(message.c_str()), 0);
-	if (sendResult == SOCKET_ERROR) {
-		cout << "send failed !" << endl;
-		closesocket(clientSocket);
-		WSACleanup();
-		return;
-	}
-
-	sendResult = shutdown(clientSocket, SD_SEND);
-	if (sendResult == SOCKET_ERROR) {
-		closesocket(clientSocket);
-		WSACleanup();
-		return;
-	}
-
 	do{
 		vector<char> buf(4096);
 
 		buf.clear();
 		bytesReceived = recv(clientSocket, buf.data(), 4096, 0);
 		if (bytesReceived > 0) {
+			const char *sendCmd = "SEND";
+			const char* getCmd = "UPLOAD";
 
 			cout << buf.data() << endl;
+
+	
+			if (strcmp(buf.data(),sendCmd)==0) {
+
+				sendResult = send(clientSocket, message.c_str(), (int)strlen(message.c_str()), 0);
+				if (sendResult == SOCKET_ERROR) {
+					cout << "send failed !" << endl;
+					closesocket(clientSocket);
+					WSACleanup();
+					return;
+				}
+
+				sendProduct();
+			}
+			else if (strcmp(buf.data(),getCmd)==0) {
+				uploadProduct();
+			}
+
 
 		}
 		else if (bytesReceived == 0) {
@@ -121,9 +128,24 @@ void main()
 
 	} while (bytesReceived > 0);
 
+	sendResult = shutdown(clientSocket, SD_SEND);
+	if (sendResult == SOCKET_ERROR) {
+		closesocket(clientSocket);
+		WSACleanup();
+		return;
+	}
 
 	closesocket(clientSocket);
 	WSACleanup();
 
 
+}
+
+void sendProduct() {
+	cout << "SEND FUNC CALLED" << endl;
+
+}
+
+void uploadProduct() {
+	cout << "GET FUNC CALLED" << endl;
 }
